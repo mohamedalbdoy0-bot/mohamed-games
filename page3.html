@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بنك الحظ - مصر</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#000;color:#fff;padding:12px;min-height:100vh}
+h1{text-align:center;color:#FFD700;margin:6px;font-size:26px}
+.top{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.card{background:#111;border:2px solid #FFD700;border-radius:12px;padding:8px;min-width:140px;text-align:center;color:#fff}
+.card.active{border:3px solid #00ff88}
+.card.ai{border-color:#00bfff}
+.card.exempt{border-color:#00ff88;background:#0a2a15}
+.card.state{border-color:#FFD700;background:#2a2000;box-shadow:0 0 12px #FFD700}
+.board{width:100%;max-width:840px;margin:0 auto;padding:10px;border-radius:12px;background:#000;border:3px solid #FFD700}
+.inner{background:#000;padding:8px;border-radius:8px}
+.row{display:flex;gap:7px;margin-bottom:7px}
+.row:last-child{margin-bottom:0}
+.mid{display:flex;gap:7px;margin-bottom:7px}
+.col{display:flex;flex-direction:column;gap:7px;width:12.2%}
+.center{flex:1;background:#111;color:#fff;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px;border:2px solid #FFD700;gap:6px}
+.center h2{margin:0;font-size:30px;color:#FFD700}
+.center p{margin:2px 0;font-weight:bold;font-size:12px;color:#fff}
+.cell{flex:1;background:#111;color:#fff;border-radius:10px;padding:6px;text-align:center;min-height:92px;display:flex;flex-direction:column;justify-content:space-between;border:2px solid #555}
+.col .cell{flex:none;height:92px}
+.cell.special{background:#1a1a1a;border-color:#FFD700}
+.cell.mortgaged{background:#3a0a0a;border-color:#ef4444}
+.cell.start{background:#00ff88;color:#000;border-color:#fff}
+.cell.start .city{color:#000}
+.cell.start .price{color:#000}
+.cell.start .toll{color:#000}
+.cell.start .infra{color:#000}
+.cell .car{font-size:22px;min-height:24px;background:#222;border-radius:6px}
+.cell.start .car{background:#fff}
+.cell .city{font-weight:900;font-size:13px;color:#fff}
+.cell .price{font-weight:900;color:#00ff88;font-size:12px}
+.cell .owner{background:#FFD700;color:#000;border-radius:20px;font-size:10px;padding:2px 4px;font-weight:bold}
+.cell .toll{color:#ff5252;font-weight:900;font-size:11px}
+.cell .infra{font-size:10px;opacity:.8;color:#ccc}
+button{border:none;border-radius:10px;padding:10px 12px;font-weight:900;cursor:pointer;font-size:13px}
+button:disabled{opacity:.4}
+.btn-gold{background:#FFD700;color:#000;font-size:16px;width:100%}
+.btn-green{background:#22c55e;color:#fff;width:100%}
+.btn-blue{background:#3b82f6;color:#fff;width:100%}
+.btn-red{background:#ef4444;color:#fff;width:100%}
+.btn-dark{background:#333;color:#fff;border:1px solid #fff;width:100%}
+.btn-ai{background:#00bfff;color:#fff;width:100%;font-size:15px}
+.btn-end{background:#ff3b30;color:#fff;width:100%;font-size:15px}
+.btn-invest{background:#a855f7;color:#fff;width:100%;font-size:15px}
+.btn-bankrupt{background:#f97316;color:#fff;width:100%;font-size:15px}
+.btn-state{background:linear-gradient(90deg,#FFD700,#ff8c00);color:#000;width:100%;font-size:16px;border:2px solid #fff}
+.btn-bank{background:#00ff88;color:#000;width:100%;font-size:15px}
+.btn-buy{background:#00bfff;color:#fff;width:100%;font-size:15px}
+.btn-case{background:#ef4444;color:#fff;width:100%;font-size:15px}
+.center-btns{width:100%;display:flex;flex-direction:column;gap:6px}
+.bottom-btns{width:100%;max-width:840px;margin:14px auto 0 auto;display:flex;flex-direction:column;gap:8px}
+.dice{text-align:center;font-size:22px;margin:8px}
+.msg{text-align:center;background:#111;padding:10px;border-radius:10px;margin:8px;min-height:44px;border:1px solid #444}
+.timer{text-align:center;background:#ef4444;color:#fff;padding:8px;border-radius:10px;font-weight:900;font-size:20px;margin:8px;display:none}
+.timer.safe{background:#22c55e}
+.kbd{background:#fff;color:#000;padding:1px 7px;border-radius:6px;font-size:11px;margin-left:4px}
+.help{text-align:center;font-size:12px;color:#ccc;margin:8px;line-height:1.8}
+.winner{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:99;text-align:center;padding:20px}
+.winner h2{font-size:40px;color:#FFD700;margin:10px}
+.winner p{font-size:18px}
+.auction{background:#1a1a1a;border:1px solid #FFD700;padding:8px;border-radius:10px;margin:8px;text-align:center;display:none}
+.bankruptBox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:100;text-align:center;padding:20px}
+.bankruptBox h2{color:#f97316;font-size:32px}
+.bankruptBox p{font-size:16px;line-height:1.8}
+.stateBox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:101;text-align:center;padding:20px}
+.stateBox h2{color:#FFD700;font-size:32px}
+.stateBox p{font-size:15px;line-height:1.8}
+.stateTop{width:100%;max-width:840px;margin:0 auto 10px auto;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.stateBtn{border:2px solid #FFD700;background:#2a2000;color:#FFD700;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
+.exchangeBox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:102;text-align:center;padding:20px}
+.exchangeBox h2{color:#00ff88;font-size:30px}
+.exchangeBox p{font-size:15px;line-height:1.8}
+.caseBox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:103;text-align:center;padding:20px}
+.caseBox h2{color:#ef4444;font-size:30px}
+.caseBox p{font-size:15px;line-height:1.8}
+.mortgageBox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:104;text-align:center;padding:20px}
+.mortgageBox h2{color:#ef4444;font-size:30px}
+.mortgageBox p{font-size:15px;line-height:1.8}
+</style>
+</head>
+<body>
+<h1>🏦 بنك الحظ - محافظات مصر 🏎️</h1>
+<div class="stateTop" id="stateTop"></div>
+<div class="top" id="playersTop"></div>
+<div class="dice" id="diceRes">🎲 دور لاعب 1 - دوس الزهر</div>
+<div class="timer" id="timer">⏳ باقي 30 ثانية ودورك يخلص لوحده</div>
+<div class="msg" id="msg">كل لفة كاملة = +100$ | اللي يعدي يدفع 2$ - اللي يقف يدفع 20$</div>
+<div class="auction" id="auctionBox"></div>
+<div class="help">⌨️ كيبورد: <span class="kbd">Enter</span> زهر <span class="kbd">1</span> اشتري <span class="kbd">2</span> استثمار - صاحب البلد يحدد المبلغ والنسبة والمدة <span class="kbd">3</span> قرض max 1000$ <span class="kbd">4</span> بنية <span class="kbd">5</span> بنزينة <span class="kbd">6</span> صيانة <span class="kbd">0</span> انهاء الدور <span class="kbd">7</span> افلاس <span class="kbd">8</span> بداء الدولة <span class="kbd">9</span> البنك بيع / شراء عملة<br>📱 موبايل: دوس على الزراير في نص اللوحة<br>💰 سداد القرض: كل 5 رميات = قسط | 🏗️ كل 100$ بنية = +1$ عدي / +10$ وقوف | 🏛️ ثروة 30000$ + اكتر من 15 دولة = تقدر تبدأ دولة | 🏦 البنك: بيشتري منك بـ 5$ وبيبيع للاعيبة بـ 5.5$ | 💜 الاستثمار: فلوسك لصاحب البلد وهو يدفعلك نسبتك - المدة حد أدنى 50 لفة - لو فلوسه خلصت: قضية ولا تنازل؟ - الرهن: فك الرهن = فلوس المستثمر + 50% للبنك - لو مفكش الرهن 20 رمية البلد تروح للمستثمر</div>
+<div class="board"><div class="inner" id="boardInner"></div></div>
+
+<div class="bottom-btns">
+<button class="btn-ai" onclick="startAI()">🤖 العب مع الذكاء الاصطناعي</button>
+<button class="btn-dark" onclick="startFriends()">👥 العب مع صحابك</button>
+<div id="modeTxt" style="text-align:center;font-weight:bold;color:#FFD700">الوضع الحالي: مع صحابك</div>
+</div>
+
+<div class="winner" id="winnerBox">
+<div style="font-size:80px">🏆</div>
+<h2 id="winnerTxt">الفائز</h2>
+<p id="winnerSub"></p>
+<button class="btn-gold" style="max-width:300px" onclick="location.reload()">🔄 العب تاني من الاول</button>
+</div>
+
+<div class="bankruptBox" id="bankruptBox">
+<div style="font-size:70px">📢</div>
+<h2 id="bankruptTitle">اعلان إفلاس</h2>
+<p id="bankruptTxt"></p>
+<div style="display:flex;gap:10px;width:100%;max-width:400px;flex-direction:column">
+<button class="btn-green" onclick="chooseBankrupt(true)">✅ اعلن إفلاسي - اطلب موافقة اللاعيبة</button>
+<button class="btn-red" onclick="chooseBankrupt(false)">❌ لا، اخسر واخرج</button>
+</div>
+</div>
+
+<div class="stateBox" id="stateBox">
+<div style="font-size:70px">🏛️</div>
+<h2 id="stateTitle">بداء الدولة</h2>
+<p id="stateTxt"></p>
+<div style="display:flex;gap:10px;width:100%;max-width:460px;flex-direction:column">
+<button class="btn-state" onclick="confirmStartState()">🏛️ ابدأ دولتي - اعمل عملة موحدة</button>
+<button class="btn-dark" onclick="closeStateBox()">❌ اقفل</button>
+</div>
+</div>
+
+<div class="exchangeBox" id="exchangeBox">
+<div style="font-size:70px">🏦</div>
+<h2 id="exchangeTitle">البنك - تبديل عملة</h2>
+<p id="exchangeTxt"></p>
+<div style="display:flex;gap:10px;width:100%;max-width:460px;flex-direction:column">
+<button class="btn-bank" onclick="doExchange()">💱 بيع عملتي للبنك - اخد دولار كامل</button>
+<button class="btn-buy" onclick="doBuyCurrency()">🛒 اشتري عملة من البنك - بـ 5.5$</button>
+<button class="btn-dark" onclick="closeExchangeBox()">❌ مش عايز ابدل</button>
+</div>
+</div>
+
+<div class="caseBox" id="caseBox">
+<div style="font-size:70px">⚖️</div>
+<h2 id="caseTitle">صاحب البلد فلوسه خلصت!</h2>
+<p id="caseTxt"></p>
+<div style="display:flex;gap:10px;width:100%;max-width:460px;flex-direction:column">
+<button class="btn-case" onclick="chooseCase(true)">⚖️ اعمل قضية - ارهن بلده</button>
+<button class="btn-green" onclick="chooseCase(false)">🤝 اتنازل - اكتب هتنازل على كام وكمل استثماري</button>
+</div>
+</div>
+
+<div class="mortgageBox" id="mortgageBox">
+<div style="font-size:70px">🏚️</div>
+<h2 id="mortgageTitle">بلدك مرهونة!</h2>
+<p id="mortgageTxt"></p>
+<div style="display:flex;gap:10px;width:100%;max-width:460px;flex-direction:column">
+<button class="btn-bank" onclick="confirmUnmortgage()">💰 افك الرهن - ادفع للمستثمر + 50% للبنك</button>
+<button class="btn-dark" onclick="closeMortgageBox()">❌ مش هفك دلوقتي - كمل</button>
+</div>
+</div>
+
+<script>
+var cars=['🚗','🚙','🚕','🚓'];
+var govs=[
+ {n:'القاهرة',p:75},{n:'الجيزة',p:90},{n:'الاسكندرية',p:105},{n:'طنطا',p:120},
+ {n:'المنصورة',p:135},{n:'اسيوط',p:150},{n:'اسوان',p:165},{n:'الاقصر',p:180},
+ {n:'بورسعيد',p:195},{n:'السويس',p:210},{n:'الفيوم',p:225},{n:'الشرقية',p:240},
+ {n:'الدقهلية',p:255},{n:'البحيرة',p:270},{n:'كفر الشيخ',p:285},{n:'المنيا',p:300},
+ {n:'سوهاج',p:315},{n:'قنا',p:330},{n:'البحر الاحمر',p:345},{n:'مطروح',p:360},
+ {n:'الاسماعيلية',p:375},{n:'دمياط',p:390},{n:'بني سويف',p:405},{n:'شمال سيناء',p:420}
+];
+var board=[];
+for(var i=0;i<govs.length;i++) board.push({name:govs[i].n,price:govs[i].p,owner:-1,infra:0,investor:-1,investPrice:0,investPct:10,investLaps:0,investLapsLeft:0,special:0,mortgaged:false,mortgageFor:-1,mortgageAmt:0,mortgageRolls:0});
+board.splice(4,0,{name:'⛽ بنزينة',price:0,owner:-2,infra:0,investor:-1,investPrice:0,investPct:10,investLaps:0,investLapsLeft:0,special:1,mortgaged:false,mortgageFor:-1,mortgageAmt:0,mortgageRolls:0});
+board.splice(9,0,{name:'🔧 صيانة',price:0,owner:-2,infra:0,investor:-1,investPrice:0,investPct:10,investLaps:0,investLapsLeft:0,special:1,mortgaged:false,mortgageFor:-1,mortgageAmt:0,mortgageRolls:0});
+board.splice(14,0,{name:'🏦 بنك',price:0,owner:-2,infra:0,investor:-1,investPrice:0,investPct:10,investLaps:0,investLapsLeft:0,special:1,mortgaged:false,mortgageFor:-1,mortgageAmt:0,mortgageRolls:0});
+board.splice(19,0,{name:'🏗️ بنية تحتية',price:0,owner:-2,infra:0,investor:-1,investPrice:0,investPct:10,investLaps:0,investLapsLeft:0,special:1,mortgaged:false,mortgageFor:-1,mortgageAmt:0,mortgageRolls:0});
+board.unshift({name:'🏁 البداية',price:0,owner:-2,infra:0,investor:-1,investPrice:0,investPct:10,investLaps:0,investLapsLeft:0,special:2,mortgaged:false,mortgageFor:-1,mortgageAmt:0,mortgageRolls:0});
+
+var isAI=false;
+var pCount=2;
+try{ pCount=Number(localStorage.getItem('players')||2); if(!pCount||pCount<2) pCount=2; if(pCount>4) pCount=4; }catch(e){ pCount=2; }
+var players=[];
+var cur=0;
+var isRolling=false;
+var timeLeft=30;
+var timerInt=null;
+var TURN_TIME=30;
+var gameOver=false;
+var pendingBankruptIdx=-1;
+var pendingBankruptCallback=null;
+var pendingStateIdx=-1;
+var pendingExchangeIdx=-1;
+var pendingCaseCell=-1;
+var pendingCaseInvestor=-1;
+var pendingCaseDue=0;
+var pendingMortgageCell=-1;
+
+function wealth(idx){
+  var p=players[idx]; if(!p) return 0;
+  var w=p.money;
+  if(p.state && p.state.active) w+= (p.currBal||0)*p.state.value;
+  if(p.boughtBal) w+= p.boughtBal*(p.boughtValue||0);
+  for(var i=0;i<board.length;i++) if(board[i].owner==idx) w+=board[i].price+board[i].infra;
+  return Math.floor(w);
+}
+function ownedCount(idx){
+  var c=0; for(var i=0;i<board.length;i++) if(board[i].owner==idx) c++; return c;
+}
+function canStartState(idx){
+  var p=players[idx]; if(!p) return false;
+  if(p.state && p.state.active) return false;
+  return wealth(idx)>=30000 && ownedCount(idx)>15;
+}
+
+// ===== مدة الاستثمار =====
+function tickInvestLaps(investorIdx){
+  // كل لفة كاملة للمستثمر - مدة استثماراته بتنقص 1
+  for(var i=0;i<board.length;i++){
+    var cell=board[i];
+    if(cell.investor==investorIdx && cell.investLapsLeft>0 && !cell.mortgaged){
+      cell.investLapsLeft--;
+      if(cell.investLapsLeft<=0){
+        var inv=players[investorIdx];
+        var own=players[cell.owner];
+        cell.investor=-1; cell.investPrice=0; cell.investPct=10; cell.investLaps=0; cell.investLapsLeft=0;
+        var box=document.getElementById('auctionBox');
+        box.innerHTML='<b>💜 انتهاء الاستثمار:</b><br>مدة استثمار '+ (inv?inv.name:'') +' في <b>'+cell.name+'</b> خلصت<br>صاحب البلد '+(own?own.name:'')+' مش هيدفع نسبة تاني';
+        box.style.display='block';
+        setTimeout(function(){ box.style.display='none'; }, 5000);
+        document.getElementById('msg').innerText='💜 مدة الاستثمار في '+cell.name+' خلصت - المستثمر خد نسبته كل المدة';
+      }
+    }
+  }
+}
+
+function checkMortgageExpiry(){
+  for(var i=0;i<board.length;i++){
+    var cell=board[i];
+    if(!cell.mortgaged) continue;
+    if(cell.mortgageRolls>=20){
+      var oldOwner=players[cell.owner];
+      var investor=players[cell.mortgageFor];
+      if(!oldOwner || !investor) continue;
+      var oldName=oldOwner.name;
+      var invName=investor.name;
+      cell.owner=cell.mortgageFor;
+      cell.mortgaged=false;
+      cell.mortgageFor=-1;
+      cell.mortgageAmt=0;
+      cell.mortgageRolls=0;
+      cell.investor=-1; cell.investPrice=0; cell.investPct=10; cell.investLaps=0; cell.investLapsLeft=0;
+      playLose();
+      var box=document.getElementById('auctionBox');
+      box.innerHTML='<b>🏚️ البلد راحت للمستثمر!</b><br>'+oldName+' مفكش رهن <b>'+cell.name+'</b> لـ 20 رمية زهر<br>البلد بقت بتاعة <b>'+invName+'</b> المستثمر<br>الاستثمار خلص - المستثمر بقى صاحب البلد';
+      box.style.display='block';
+      setTimeout(function(){ box.style.display='none'; }, 8000);
+      document.getElementById('msg').innerText='🏚️ '+cell.name+' راحت لـ '+invName+' - '+oldName+' مفكش الرهن 20 رمية!';
+      render();
+    }
+  }
+}
+
+function payInvestor(cell, investorIdx){
+  var ownerIdx=cell.owner;
+  var owner=players[ownerIdx];
+  var investor=players[investorIdx];
+  if(!owner || !investor) return 0;
+  if(cell.mortgaged) return 0;
+  if(cell.investLapsLeft<=0) return 0;
+  var due=Math.floor(cell.investPrice*(cell.investPct||10)/100);
+  if(due<=0) return 0;
+  if(owner.money>=due){
+    owner.money-=due;
+    investor.money+=due;
+    return due;
+  }
+  if(investor.isBot){
+    if(Math.random()<0.5){
+      var waive=Math.floor(due/2);
+      var toPay=due-waive;
+      if(owner.money>=toPay){ owner.money-=toPay; investor.money+=toPay; document.getElementById('msg').innerText='🤝 🤖 '+investor.name+' اتنازل على '+waive+'$ - صاحب البلد دفع '+toPay+'$ بس وكمل'; return toPay; }
+      else { var cp=owner.money; owner.money=0; investor.money+=cp; document.getElementById('msg').innerText='🤝 🤖 '+investor.name+' اتنازل - خد اللي مع صاحب البلد '+cp+'$'; return cp; }
+    } else {
+      doMortgage(board.indexOf(cell), investorIdx);
+      return 0;
+    }
+  } else {
+    var cellIdx=board.indexOf(cell);
+    pendingCaseCell=cellIdx;
+    pendingCaseInvestor=investorIdx;
+    pendingCaseDue=due;
+    document.getElementById('caseTitle').innerText='⚖️ '+owner.car+' '+owner.name+' فلوسه خلصت!';
+    document.getElementById('caseTxt').innerHTML='انت مستثمر في <b>'+cell.name+'</b> بـ '+cell.investPrice+'$ بنسبة '+cell.investPct+'% - باقي '+cell.investLapsLeft+' لفة من '+cell.investLaps+' لفة<br>المفروض تاخد <b>'+due+'$</b> كل مرة تعدي<br>صاحب البلد معاه <b>'+owner.money+'$ بس</b> - مش قادر يدفع<br><br><b>اختياراتك:</b><br>⚖️ <b>قضية:</b> بلده تترهن بفلوسك، وكل ما يعدي على بلاده يجيله فك الرهن<br>🤝 <b>تنازل:</b> تكتب هتتنازل على كام، والباقي يدفعه، وتكمل استثمارك عادي';
+    document.getElementById('caseBox').style.display='flex';
+    return 0;
+  }
+}
+function chooseCase(isCase){
+  var cellIdx=pendingCaseCell;
+  var invIdx=pendingCaseInvestor;
+  var due=pendingCaseDue;
+  document.getElementById('caseBox').style.display='none';
+  pendingCaseCell=-1; pendingCaseInvestor=-1; pendingCaseDue=0;
+  if(cellIdx<0) return;
+  var cell=board[cellIdx];
+  var owner=players[cell.owner];
+  var investor=players[invIdx];
+  if(!owner || !investor) return;
+  if(isCase){
+    doMortgage(cellIdx, invIdx);
+  } else {
+    var waive=Number(prompt('🤝 هتتنازل على كام من الـ '+due+'$؟\n\nصاحب البلد معاه '+owner.money+'$\nلو اتنازلت على '+due+'$ كلها - مش هتاخد حاجة المرة دي وتكمل استثمارك\nلو اتنازلت على جزء - صاحب البلد هيدفع الباقي\n\nاكتب الرقم')||0);
+    if(waive<0) waive=0; if(waive>due) waive=due;
+    var toPay=due-waive;
+    var paid=Math.min(toPay, owner.money);
+    owner.money-=paid; investor.money+=paid;
+    playInvest();
+    var box=document.getElementById('auctionBox');
+    box.innerHTML='<b>🤝 تنازل:</b><br>'+investor.car+' '+investor.name+' اتنازل على '+waive+'$<br>صاحب البلد '+owner.name+' دفع '+paid+'$ بس<br>الاستثمار بيكمل عادي - باقي '+cell.investLapsLeft+' لفة';
+    box.style.display='block';
+    setTimeout(function(){ box.style.display='none'; }, 6000);
+    document.getElementById('msg').innerText='🤝 '+investor.name+' اتنازل على '+waive+'$ - '+owner.name+' دفع '+paid+'$ - الاستثمار بيكمل عادي';
+    render();
+  }
+}
+function doMortgage(cellIdx, investorIdx){
+  var cell=board[cellIdx];
+  var owner=players[cell.owner];
+  var investor=players[investorIdx];
+  if(!cell || !owner || !investor) return;
+  cell.mortgaged=true;
+  cell.mortgageFor=investorIdx;
+  cell.mortgageAmt=cell.investPrice;
+  cell.mortgageRolls=0;
+  playLose();
+  var box=document.getElementById('auctionBox');
+  var unmortgageCost=Math.floor(cell.mortgageAmt*1.5);
+  var bankProfit=Math.floor(cell.mortgageAmt*0.5);
+  box.innerHTML='<b>⚖️ قضية - رهن:</b><br>'+investor.car+' '+investor.name+' عمل قضية على '+owner.name+'<br>بلد <b>'+cell.name+'</b> اترهنت بفلوس المستثمر '+cell.mortgageAmt+'$<br>فك الرهن = '+unmortgageCost+'$ - '+cell.mortgageAmt+'$ ترجع للمستثمر + '+bankProfit+'$ مكسب البنك (50%)<br>لو مفكش الرهن لـ <b>20 رمية زهر</b> - البلد تروح للمستثمر<br>صاحب البلد كل ما يعدي على بلاده هتجيله رسالة فك الرهن';
+  box.style.display='block';
+  setTimeout(function(){ box.style.display='none'; }, 8000);
+  document.getElementById('msg').innerText='⚖️ '+cell.name+' اترهنت! - '+investor.name+' عمل قضية - فك الرهن '+unmortgageCost+'$ - لو مفكش 20 رمية البلد تروح للمستثمر';
+  render();
+}
+function openMortgageBox(cellIdx){
+  pendingMortgageCell=cellIdx;
+  var cell=board[cellIdx];
+  var owner=players[cell.owner];
+  var investor=players[cell.mortgageFor];
+  if(!cell || !owner || !investor) return;
+  var cost=Math.floor(cell.mortgageAmt*1.5);
+  var bankProfit=Math.floor(cell.mortgageAmt*0.5);
+  var left=20-cell.mortgageRolls;
+  document.getElementById('mortgageTitle').innerText='🏚️ '+cell.name+' مرهونة!';
+  document.getElementById('mortgageTxt').innerHTML='انت <b>'+owner.name+'</b> صاحب <b>'+cell.name+'</b><br>بلدك مرهونة بفلوس المستثمر <b>'+investor.name+'</b><br>فلوس المستثمر: <b>'+cell.mortgageAmt+'$</b><br>عدى من الرهن: <b>'+cell.mortgageRolls+' رمية</b> - باقي <b>'+left+' رمية</b> والبلد تروح للمستثمر<br><br><b>تريد فك الرهن؟</b><br>فك الرهن = <b>'+cost+'$</b><br>- '+cell.mortgageAmt+'$ ترجع للمستثمر '+investor.name+'<br>- '+bankProfit+'$ مكسب البنك (50%)<br><br>معاك '+owner.money+'$ دولار<br>لو فكيت الرهن - البلد ترجعلك والاستثمار يخلص';
+  document.getElementById('mortgageBox').style.display='flex';
+  if(owner.isBot){
+    setTimeout(function(){
+      if(owner.money>=cost){ confirmUnmortgage(); } else { closeMortgageBox(); }
+    }, 800);
+  }
+}
+function closeMortgageBox(){
+  document.getElementById('mortgageBox').style.display='none';
+  pendingMortgageCell=-1;
+}
+function confirmUnmortgage(){
+  var cellIdx=pendingMortgageCell;
+  document.getElementById('mortgageBox').style.display='none';
+  pendingMortgageCell=-1;
+  if(cellIdx<0) return;
+  var cell=board[cellIdx];
+  var owner=players[cell.owner];
+  var investor=players[cell.mortgageFor];
+  if(!cell || !owner || !investor) return;
+  var cost=Math.floor(cell.mortgageAmt*1.5);
+  var bankProfit=Math.floor(cell.mortgageAmt*0.5);
+  var amtBack=cell.mortgageAmt;
+  if(owner.money<cost){ alert('معكش فلوس تفك الرهن - محتاج '+cost+'$ ومعاك '+owner.money+'$'); return; }
+  owner.money-=cost;
+  investor.money+=amtBack;
+  cell.mortgaged=false;
+  cell.mortgageFor=-1;
+  cell.mortgageAmt=0;
+  cell.mortgageRolls=0;
+  cell.investor=-1; cell.investPrice=0; cell.investPct=10; cell.investLaps=0; cell.investLapsLeft=0;
+  playWin();
+  var box=document.getElementById('auctionBox');
+  box.innerHTML='<b>🏚️ فك الرهن:</b><br>'+owner.name+' فك رهن '+cell.name+'<br>دفع '+cost+'$ - '+amtBack+'$ رجعت للمستثمر<br>البنك خد '+bankProfit+'$ مكسب 50%<br>البلد رجعت لصاحبها والاستثمار خلص';
+  box.style.display='block';
+  setTimeout(function(){ box.style.display='none'; }, 7000);
+  document.getElementById('msg').innerText='🏚️ '+owner.name+' فك رهن '+cell.name+' - دفع '+cost+'$ - المستثمر خد فلوسه والبنك خد '+bankProfit+'$';
+  render();
+}
+
+function initPlayers(count, aiMode){
+  players=[];
+  gameOver=false;
+  pendingBankruptIdx=-1;
+  pendingStateIdx=-1;
+  pendingExchangeIdx=-1;
+  pendingCaseCell=-1; pendingCaseInvestor=-1; pendingCaseDue=0;
+  pendingMortgageCell=-1;
+  document.getElementById('winnerBox').style.display='none';
+  document.getElementById('bankruptBox').style.display='none';
+  document.getElementById('stateBox').style.display='none';
+  document.getElementById('exchangeBox').style.display='none';
+  document.getElementById('caseBox').style.display='none';
+  document.getElementById('mortgageBox').style.display='none';
+  document.getElementById('auctionBox').style.display='none';
+  for(var j=0;j<count;j++){
+    var isBot = aiMode && j>0;
+    players.push({name: isBot ? 'كمبيوتر '+(j) : 'لاعب '+(j+1), money:100,pos:0,fuel:100,fix:100,loan:0,loanTotal:0,loanLeft:0,car:cars[j], isBot:isBot, rolls:0, exemptLaps:0, state:null, currBal:0, boughtBal:0, boughtCurrency:'', boughtValue:0, boughtFrom:-1});
+  }
+  cur=0; isRolling=false;
+  if(timerInt) clearInterval(timerInt);
+  document.getElementById('timer').style.display='none';
+  document.getElementById('diceRes').innerText='🎲 دور '+players[0].car+' '+players[0].name+' - دوس الزهر';
+  document.getElementById('msg').innerText='دور '+players[0].name+' - دوس الزهر';
+  updateModeTxt();
+  render();
+  checkAITurn();
+}
+function updateModeTxt(){
+  var el=document.getElementById('modeTxt');
+  if(el) el.innerText = isAI ? 'الوضع الحالي: 🤖 انت ضد 3 كمبيوتر' : 'الوضع الحالي: مع صحابك';
+}
+function resetBoard(){
+  for(var i=0;i<board.length;i++){ if(board[i].owner>=0) board[i].owner=-1; board[i].infra=0; board[i].investor=-1; board[i].investPrice=0; board[i].investPct=10; board[i].investLaps=0; board[i].investLapsLeft=0; board[i].mortgaged=false; board[i].mortgageFor=-1; board[i].mortgageAmt=0; board[i].mortgageRolls=0; }
+}
+
+// ===== الصوت =====
+var audioCtx=null;
+function getCtx(){ if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); return audioCtx; }
+function beep(freq,dur,type,vol,delay){
+  var ctx=getCtx(); if(!ctx) return;
+  var t=ctx.currentTime+(delay||0);
+  var o=ctx.createOscillator(); var g=ctx.createGain();
+  o.type=type||'square'; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(vol||0.15,t);
+  g.gain.exponentialRampToValueAtTime(0.001,t+(dur||0.15));
+  o.connect(g); g.connect(ctx.destination);
+  o.start(t); o.stop(t+(dur||0.15)+0.02);
+}
+function playDice(){ beep(200,0.08,'square',0.2,0); beep(300,0.08,'square',0.2,0.09); beep(400,0.08,'square',0.2,0.18); beep(600,0.12,'square',0.2,0.27); }
+function playMove(){ beep(500,0.05,'triangle',0.15,0); }
+function playBuy(){ beep(523,0.12,'sine',0.25,0); beep(659,0.12,'sine',0.25,0.12); beep(784,0.2,'sine',0.25,0.24); }
+function playSell(){ beep(784,0.12,'sine',0.2,0); beep(659,0.12,'sine',0.2,0.12); beep(523,0.2,'sine',0.2,0.24); }
+function playLoan(){ beep(880,0.1,'square',0.2,0); beep(880,0.1,'square',0.2,0.15); beep(1100,0.2,'square',0.2,0.3); }
+function playInfra(){ beep(300,0.15,'sawtooth',0.18,0); beep(450,0.2,'sawtooth',0.18,0.15); }
+function playFuel(){ beep(200,0.2,'sine',0.2,0); beep(400,0.25,'sine',0.2,0.15); }
+function playFix(){ beep(150,0.1,'square',0.2,0); beep(150,0.1,'square',0.2,0.12); beep(250,0.15,'square',0.2,0.24); }
+function playToll(){ beep(180,0.2,'sawtooth',0.2,0); }
+function playTurn(){ beep(700,0.15,'sine',0.2,0); beep(900,0.15,'sine',0.2,0.12); }
+function playInvest(){ beep(523,0.1,'sine',0.25,0); beep(784,0.1,'sine',0.25,0.1); beep(1046,0.2,'sine',0.25,0.2); }
+function playStart(){ beep(523,0.12,'sine',0.25,0); beep(659,0.12,'sine',0.25,0.1); beep(784,0.12,'sine',0.25,0.2); beep(1046,0.25,'sine',0.25,0.3); }
+function playLose(){ beep(400,0.2,'sawtooth',0.2,0); beep(300,0.2,'sawtooth',0.2,0.2); beep(200,0.4,'sawtooth',0.2,0.4); }
+function playWin(){ beep(523,0.15,'sine',0.25,0); beep(659,0.15,'sine',0.25,0.15); beep(784,0.15,'sine',0.25,0.3); beep(1046,0.4,'sine',0.25,0.45); }
+function playAuction(){ beep(880,0.1,'square',0.2,0); beep(1100,0.1,'square',0.2,0.1); beep(1320,0.2,'square',0.2,0.2); }
+
+function tollPass(c){
+  if(c.owner<0) return 0;
+  if(c.mortgaged) return 0;
+  var bonus = Math.floor(c.infra/100)*1;
+  var t = 2 + bonus;
+  if(t>100) t=100; return t;
+}
+function tollStop(c){
+  if(c.owner<0) return 0;
+  if(c.mortgaged) return 0;
+  var bonus = Math.floor(c.infra/100)*10;
+  var t = 20 + bonus;
+  if(t>1000) t=1000; return t;
+}
+function toll(c){ return tollStop(c); }
+
+// ===== بداء الدولة =====
+function openStateBox(idx){
+  pendingStateIdx=idx;
+  var p=players[idx];
+  document.getElementById('stateTitle').innerText='🏛️ '+p.car+' '+p.name+' - بداء الدولة';
+  document.getElementById('stateTxt').innerHTML='ثروتك: <b>'+wealth(idx)+'$</b> | بلادك: <b>'+ownedCount(idx)+'</b> دولة<br><br>🏦 <b>رسالة من البنك المركزي:</b><br>نريد تغيير العملات للاعبين لكي يتمكنوا من الدفع في بلادك<br>انت اللي هتحدد قيمة عملتك - حد اقصى <b>10$ للعملة الواحدة</b><br><br>مميزات الدولة:<br>✅ رصيدين: رصيد دولار + رصيد عملتك<br>✅ قرض بلا حدود (العادي حد اقصى 1000$)<br>✅ كل ما تروح البداية تاخد <b>1000 عملة</b> من عملتك مش دولار<br>✅ البنك بيشتري عملتك بـ قيمتها وبيبيعها بـ +10%<br><br>هتسمي عملتك ايه؟ وقيمتها كام؟';
+  document.getElementById('stateBox').style.display='flex';
+  if(p.isBot){ setTimeout(function(){ confirmStartState(); }, 800); }
+}
+function closeStateBox(){
+  document.getElementById('stateBox').style.display='none';
+  pendingStateIdx=-1;
+}
+function confirmStartState(){
+  var idx=pendingStateIdx;
+  if(idx<0) return;
+  var p=players[idx];
+  var cName='عملة '+p.name;
+  var cVal=5;
+  if(p.isBot){ cName='عملة '+p.name; cVal=Math.floor(Math.random()*6)+5; }
+  else {
+    cName=prompt('سمي عملة دولتك ايه؟ مثال: الجنيه، الدينار')||cName;
+    cVal=Number(prompt('حدد قيمة العملة الواحدة - حد اقصى 10$ للعملة\nمثال: لو 5$ يبقى البنك يبيعها بـ 5.5$')||5);
+    if(!cVal || cVal<1) cVal=1;
+    if(cVal>10){ alert('الحد الاقصى 10$ للعملة - هنخليها 10$'); cVal=10; }
+  }
+  p.state={active:true, currency:cName, value:cVal};
+  p.currBal=0;
+  document.getElementById('stateBox').style.display='none';
+  pendingStateIdx=-1;
+  playWin();
+  var box=document.getElementById('auctionBox');
+  box.innerHTML='<b>🏦 رسالة من البنك المركزي:</b><br>'+p.car+' '+p.name+' بدأ دولته!<br>عملته: <b>'+cName+'</b> - قيمتها <b>'+cVal+'$</b> - البنك يبيعها بـ <b>'+(cVal*1.1).toFixed(1)+'$</b><br>كل اللاعيبة لازم يغيروا عملاتهم لكي يتمكنوا من الدفع في بلاده<br>صاحب الدولة: رصيد دولار + رصيد عملة - قرض بلا حدود - 1000 عملة عند البداية';
+  box.style.display='block';
+  setTimeout(function(){ box.style.display='none'; }, 8000);
+  document.getElementById('msg').innerText='🏛️ '+p.name+' بدأ دولته! عملته '+cName+' = '+cVal+'$ - البنك يبيعها بـ '+(cVal*1.1).toFixed(1)+'$';
+  render();
+}
+function tryStartStateManual(){
+  if(gameOver) return;
+  var idx=cur;
+  if(!canStartState(idx)){
+    var p=players[idx];
+    document.getElementById('msg').innerText='عشان تبدأ دولة لازم ثروتك 30000$ وعندك اكتر من 15 دولة - ثروتك دلوقتي '+wealth(idx)+'$ وعندك '+ownedCount(idx)+' دولة';
+    return;
+  }
+  openStateBox(idx);
+}
+
+// ===== البنك: بيع وشراء عملة - 10% =====
+function openExchangeBox(idx){
+  pendingExchangeIdx=idx;
+  var p=players[idx];
+  var statesTxt='';
+  for(var i=0;i<players.length;i++){
+    if(players[i].state && players[i].state.active){
+      var sellPrice=(players[i].state.value*1.1).toFixed(1);
+      statesTxt+=players[i].car+' '+players[i].name+' - '+players[i].state.currency+' = '+players[i].state.value+'$ - البنك يبيعها بـ '+sellPrice+'$<br>';
+    }
+  }
+  if(!statesTxt) statesTxt='مفيش دول لسه - لازم حد يبدأ دولة الاول';
+  var myTxt='';
+  if(p.state && p.state.active){
+    myTxt='رصيد دولار: <b>'+p.money+'$</b><br>رصيد عملتك ('+p.state.currency+'): <b>'+p.currBal+' عملة</b> - قيمتها <b>'+p.state.value+'$</b> - البنك يبيعها بـ <b>'+(p.state.value*1.1).toFixed(1)+'$</b><br>';
+  } else {
+    myTxt='رصيد دولار: <b>'+p.money+'$</b><br>معندكش عملة خاصة - تقدر تشتري عملة دولة تانية من البنك<br>';
+  }
+  if(p.boughtBal>0) myTxt+='عملات اشتريتها: <b>'+p.boughtBal+' '+p.boughtCurrency+'</b> - قيمتها '+p.boughtValue+'$<br>';
+  document.getElementById('exchangeTitle').innerText='🏦 البنك - بيع / شراء عملة';
+  document.getElementById('exchangeTxt').innerHTML=myTxt+'<br>🏦 <b>قانون البنك 10%:</b><br>لو عملتك 5$ - البنك يشتريها منك بـ 5$<br>ويبيعها للاعيبة بـ <b>5.5$</b> - البنك بيكسب 0.5$ في العملة<br><br><b>الدول المتاحة في البنك:</b><br>'+statesTxt+'<br>انت حر - حدد الكمية اللي عايزها';
+  document.getElementById('exchangeBox').style.display='flex';
+  if(p.isBot){ setTimeout(function(){ doExchangeBot(); }, 800); }
+}
+function closeExchangeBox(){
+  document.getElementById('exchangeBox').style.display='none';
+  pendingExchangeIdx=-1;
+}
+function doExchange(){
+  var idx=pendingExchangeIdx;
+  if(idx<0) idx=cur;
+  var p=players[idx];
+  if(!p.state || !p.state.active){ alert('معندكش عملة تبيعها - تقدر تشتري عملة دولة تانية من الزرار اللي تحت'); return; }
+  var maxAmt=p.currBal;
+  if(maxAmt<=0){ alert('معندكش عملة تبيعها - رصيد عملتك صفر'); return; }
+  var amt=Number(prompt('🏦 تريد تبيع كام '+p.state.currency+' للبنك؟\n\nمعاك '+maxAmt+' عملة\nقيمة العملة '+p.state.value+'$\nالبنك هيشتريها منك بـ '+p.state.value+'$ كاملين - مش هيخصم منك حاجة\nوهيبيعها للاعيبة بـ '+(p.state.value*1.1).toFixed(1)+'$ - ده مكسب البنك\n\nاكتب الكمية اللي انت عايزها - انت حر')||0);
+  if(!amt || amt<=0){ document.getElementById('msg').innerText='مبعتش حاجة'; closeExchangeBox(); return; }
+  if(amt>maxAmt){ alert('معاك '+maxAmt+' عملة بس - هنبيع كل اللي معاك'); amt=maxAmt; }
+  var youGet=amt*p.state.value;
+  var bankSell=(p.state.value*1.1).toFixed(1);
+  p.currBal-=amt;
+  p.money+=youGet;
+  playLoan();
+  document.getElementById('exchangeBox').style.display='none';
+  pendingExchangeIdx=-1;
+  var box=document.getElementById('auctionBox');
+  box.innerHTML='<b>🏦 بيع عملة للبنك:</b><br>'+p.car+' '+p.name+' باع '+amt+' '+p.state.currency+'<br>خد <b>'+youGet+'$ دولار كاملين</b> - البنك مخدش منك حاجة<br>البنك هيبيعها للاعيبة بـ '+bankSell+'$ للعملة - مكسب البنك 10%<br>رصيد عملتك بقى '+p.currBal+' - رصيد دولار '+p.money+'$';
+  box.style.display='block';
+  setTimeout(function(){ box.style.display='none'; }, 7000);
+  document.getElementById('msg').innerText='🏦 بعت '+amt+' '+p.state.currency+' = خدت '+youGet+'$ دولار كاملين - البنك هيبيعها بـ '+bankSell+'$';
+  render();
+}
+function doBuyCurrency(){
+  var idx=pendingExchangeIdx;
+  if(idx<0) idx=cur;
+  var p=players[idx];
+  var list='';
+  var available=[];
+  for(var i=0;i<players.length;i++){
+    if(players[i].state && players[i].state.active && i!=idx){
+      available.push(i);
+      list+=i+' - '+players[i].name+' - '+players[i].state.currency+' = '+players[i].state.value+'$ - البنك يبيعها بـ '+(players[i].state.value*1.1).toFixed(1)+'$<br>';
+    }
+  }
+  if(available.length==0){ alert('مفيش دول تانية تشتري عملتها - لازم حد غيرك يبدأ دولة'); return; }
+  var chosen=Number(prompt('🏦 تشتري عملة انهي دولة؟\n\n'+list+'\nاكتب رقم اللاعب')||available[0]);
+  if(available.indexOf(chosen)<0) chosen=available[0];
+  var seller=players[chosen];
+  var buyPrice=seller.state.value*1.1;
+  var amt=Number(prompt('🏦 تريد تشتري كام '+seller.state.currency+'؟\n\nسعر البنك: '+buyPrice.toFixed(1)+'$ للعملة\n(قيمتها الاصلية '+seller.state.value+'$ + 10% مكسب البنك = '+buyPrice.toFixed(1)+'$)\nمعاك '+p.money+'$ دولار\n\nاكتب الكمية - انت حر')||0);
+  if(!amt || amt<=0){ document.getElementById('msg').innerText='مشتريتش حاجة'; closeExchangeBox(); return; }
+  var cost=Math.floor(amt*buyPrice);
+  if(cost>p.money){ alert('معكش فلوس كفاية - معاك '+p.money+'$ - هتشتري اللي تقدر عليه'); amt=Math.floor(p.money/buyPrice); cost=Math.floor(amt*buyPrice); if(amt<=0){ closeExchangeBox(); return; } }
+  p.money-=cost;
+  p.boughtBal+=amt; p.boughtCurrency=seller.state.currency; p.boughtValue=seller.state.value; p.boughtFrom=chosen;
+  playLoan();
+  document.getElementById('exchangeBox').style.display='none';
+  pendingExchangeIdx=-1;
+  var box=document.getElementById('auctionBox');
+  box.innerHTML='<b>🏦 شراء عملة من البنك:</b><br>'+p.car+' '+p.name+' اشترى '+amt+' '+seller.state.currency+'<br>دفع <b>'+cost+'$</b> - سعر العملة '+buyPrice.toFixed(1)+'$ (5$ + 0.5$ مكسب البنك)<br>رصيدك من العملة دي بقى '+p.boughtBal+' - رصيد دولار '+p.money+'$';
+  box.style.display='block';
+  setTimeout(function(){ box.style.display='none'; }, 7000);
+  document.getElementById('msg').innerText='🏦 اشتريت '+amt+' '+seller.state.currency+' بـ '+cost+'$ - سعر العملة '+buyPrice.toFixed(1)+'$';
+  render();
+}
+function doExchangeBot(){
+  var idx=pendingExchangeIdx;
+  if(idx<0) return;
+  var p=players[idx];
+  document.getElementById('exchangeBox').style.display='none';
+  pendingExchangeIdx=-1;
+  if(p.state && p.state.active && p.currBal>0){
+    var amt=Math.min(p.currBal, 500);
+    var youGet=amt*p.state.value;
+    p.currBal-=amt; p.money+=youGet;
+    document.getElementById('msg').innerText='🏦 🤖 '+p.name+' باع '+amt+' '+p.state.currency+' وخد '+youGet+'$ دولار كاملين';
+  } else {
+    for(var i=0;i<players.length;i++){
+      if(players[i].state && players[i].state.active && i!=idx){
+        var buyPrice=players[i].state.value*1.1;
+        var amt2=Math.min(100, Math.floor(p.money/buyPrice));
+        if(amt2>0){
+          var cost=Math.floor(amt2*buyPrice);
+          p.money-=cost; p.boughtBal+=amt2; p.boughtCurrency=players[i].state.currency; p.boughtValue=players[i].state.value; p.boughtFrom=i;
+          document.getElementById('msg').innerText='🏦 🤖 '+p.name+' اشترى '+amt2+' '+players[i].state.currency+' بـ '+cost+'$ من البنك';
+        }
+        break;
+      }
+    }
+  }
+  render();
+}
+function manualExchange(){
+  if(gameOver) return;
+  if(!isRolling){ document.getElementById('msg').innerText='ارمي الزهر الاول'; return; }
+  openExchangeBox(cur);
+}
+
+// ===== المزاد =====
+function hasProperties(idx){
+  for(var i=0;i<board.length;i++) if(board[i].owner==idx) return true;
+  return false;
+}
+function auctionProperties(idx){
+  var p=players[idx];
+  var soldTxt='';
+  var soldAny=false;
+  for(var i=0;i<board.length;i++){
+    if(board[i].owner!=idx) continue;
+    if(board[i].mortgaged) continue;
+    var cell=board[i];
+    var auctionPrice = Math.floor(cell.price*0.5);
+    if(auctionPrice<10) auctionPrice=10;
+    var best=-1; var bestMoney=-1;
+    for(var j=0;j<players.length;j++){
+      if(j==idx) continue;
+      if(players[j].money>=auctionPrice && players[j].money>bestMoney){ best=j; bestMoney=players[j].money; }
+    }
+    if(best!=-1){
+      players[best].money-=auctionPrice;
+      p.money+=auctionPrice;
+      cell.owner=best;
+      cell.investor=-1; cell.investPrice=0; cell.investPct=10; cell.investLaps=0; cell.investLapsLeft=0;
+      soldTxt+='🔨 '+cell.name+' اتباعت لـ '+players[best].name+' بـ '+auctionPrice+'$<br>';
+      soldAny=true;
+      playAuction();
+    } else {
+      cell.owner=-1; cell.infra=0; cell.investor=-1; cell.investPrice=0; cell.investPct=10; cell.investLaps=0; cell.investLapsLeft=0;
+      soldTxt+='⚪ '+cell.name+' محدش اشتراها - بقت متاحة<br>';
+    }
+  }
+  if(soldAny){
+    var box=document.getElementById('auctionBox');
+    box.innerHTML='<b>🔨 مزاد تلقائي - '+p.name+' فلوسه خلصت فبلاده اتباعت:</b><br>'+soldTxt+'<b>فلوسه بقت '+p.money+'$</b>';
+    box.style.display='block';
+    setTimeout(function(){ box.style.display='none'; }, 6000);
+    document.getElementById('msg').innerText='🔨 مزاد: بلاد '+p.name+' اتباعت - فلوسه بقت '+p.money+'$';
+  }
+  render();
+  return soldAny;
+}
+
+// ===== اعلان الافلاس =====
+function showBankruptChoice(idx, afterChoice){
+  pendingBankruptIdx=idx;
+  pendingBankruptCallback=afterChoice;
+  var p=players[idx];
+  document.getElementById('bankruptTitle').innerText='📢 '+p.car+' '+p.name+' هيعلن إفلاسه؟';
+  document.getElementById('bankruptTxt').innerHTML='بلادك اتباعت في المزاد<br>لسه عليك قرض '+p.loan+'$<br>رصيدك صفر<br><br><b>لو اعلنت إفلاسك:</b> هنطلب موافقة كل اللاعيبة<br>لو الكل وافق: دينك هيتسامح + هتاخد 50$ تكمل<br>وكل اللاعيبة هتاخد <b>اعفاء من المرور 3 لفات كاملة</b><br><br><b>لو حد رفض: هتخسر وتخرج</b>';
+  document.getElementById('bankruptBox').style.display='flex';
+  if(p.isBot){ setTimeout(function(){ chooseBankrupt(true); }, 1000); }
+}
+function chooseBankrupt(want){
+  document.getElementById('bankruptBox').style.display='none';
+  var idx=pendingBankruptIdx;
+  var cb=pendingBankruptCallback;
+  pendingBankruptIdx=-1; pendingBankruptCallback=null;
+  if(!want){ if(cb) cb(false); return; }
+  var p=players[idx];
+  var allAccepted=true;
+  var votes='';
+  for(var j=0;j<players.length;j++){
+    if(j==idx) continue;
+    var voter=players[j];
+    var accept=false;
+    if(voter.isBot){ accept = Math.random()<0.7; }
+    else { accept = confirm('📢 '+p.name+' عايز يعلن إفلاسه!\n\nلو وافقت انت وكل اللاعيبة:\n- دينه هيتسامح\n- هو هياخد 50$ يكمل\n- انت وكل اللاعيبة هتاخدوا اعفاء من المرور 3 لفات كاملة\n\n'+voter.name+' - موافق؟\nOK = موافق - Cancel = رافض'); }
+    votes+= (accept?'✅ ':'❌ ')+voter.name+(accept?' وافق':' رفض')+'\n';
+    if(!accept) allAccepted=false;
+  }
+  if(allAccepted){
+    p.loan=0; p.loanTotal=0; p.loanLeft=0;
+    p.money=50;
+    for(var k=0;k<players.length;k++) players[k].exemptLaps=3;
+    playWin();
+    document.getElementById('msg').innerText='📢 الكل وافق! '+p.name+' اعلن إفلاسه - دينه اتسامح + خد 50$ - وكل اللاعيبة اعفاء مرور 3 لفات!';
+    var box=document.getElementById('auctionBox');
+    box.innerHTML='<b>📢 اعلان إفلاس مقبول!</b><br>'+votes+'<br><b>كل اللاعيبة: اعفاء من المرور 3 لفات كاملة</b><br>'+p.name+' خد 50$ ودينه اتسامح';
+    box.style.display='block';
+    setTimeout(function(){ box.style.display='none'; }, 7000);
+    render();
+    if(cb) cb(true);
+  } else {
+    playLose();
+    var box2=document.getElementById('auctionBox');
+    box2.innerHTML='<b>📢 اعلان إفلاس مرفوض!</b><br>'+votes+'<br>حد رفض - '+p.name+' هيخسر';
+    box2.style.display='block';
+    setTimeout(function(){ box2.style.display='none'; }, 6000);
+    document.getElementById('msg').innerText='📢 حد رفض اعلان الإفلاس - '+p.name+' هيخسر';
+    render();
+    if(cb) cb(false);
+  }
+}
+function declareBankruptManual(){
+  if(gameOver) return;
+  if(!isRolling) { document.getElementById('msg').innerText='ارمي الزهر الاول'; return; }
+  if(players[cur].isBot) return;
+  var p=players[cur];
+  if(p.money>0){ document.getElementById('msg').innerText='انت مش مفلس - معاك '+p.money+'$'; return; }
+  showBankruptChoice(cur, function(accepted){
+    if(!accepted){ eliminatePlayer(cur); }
+    else { render(); startTimer(); }
+  });
+}
+
+function checkBankrupt(idx){
+  if(gameOver) return true;
+  var p=players[idx];
+  if(!p || p.money>0) return false;
+  if(hasProperties(idx)){
+    auctionProperties(idx);
+    if(p.money>0){
+      document.getElementById('msg').innerText='🔨 '+p.name+' باع بلاده في المزاد وكمل - معاه '+p.money+'$';
+      render();
+      return false;
+    }
+  }
+  if(p.loan>0){
+    if(timerInt) clearInterval(timerInt);
+    document.getElementById('timer').style.display='none';
+    showBankruptChoice(idx, function(accepted){
+      if(!accepted){ eliminatePlayer(idx); }
+      else { isRolling=true; render(); startTimer(); if(p.isBot) setTimeout(function(){ aiPlay(p); }, 900); }
+    });
+    return true;
+  }
+  if(p.loan==0){
+    var takeLoan=false;
+    if(p.isBot){ takeLoan=true; }
+    else { takeLoan = confirm('💸 '+p.name+' فلوسك خلصت ومعندكش بلاد تتباع!\n\nعايز تاخد قرض وتكمل؟\n\nOK = خد قرض وكمل\nCancel = اخسر واخرج'); }
+    if(takeLoan){
+      var amt=0;
+      if(p.isBot){ amt=500; }
+      else {
+        var isState = p.state && p.state.active;
+        amt=Number(prompt('عايز تقترض كام؟\nالعادي حد اقصى 1000$ - صاحب الدولة بلا حدود\n30% للبنك، سداد كل 5 رميات\nلو مكتبتش حاجة هتخسر')||0);
+        if(!isState && amt>1000){ alert('الحد الاقصى للقرض 1000$ - هنخليها 1000$'); amt=1000; }
+      }
+      if(amt>0){
+        p.money+=amt; p.loanTotal=amt+Math.floor(amt*0.30); p.loan=p.loanTotal; p.loanLeft=10;
+        playLoan();
+        document.getElementById('msg').innerText='🏦 '+p.name+' اخد قرض '+amt+'$ وكمل - هترجع '+p.loanTotal+'$ - سداد كل 5 رميات';
+        render();
+        return false;
+      }
+    }
+    eliminatePlayer(idx);
+    return true;
+  }
+  return false;
+}
+function eliminatePlayer(idx){
+  if(gameOver) return;
+  var p=players[idx];
+  if(!p) return;
+  playLose();
+  for(var i=0;i<board.length;i++){
+    if(board[i].owner==idx){ board[i].owner=-1; board[i].infra=0; }
+    if(board[i].investor==idx){ board[i].investor=-1; board[i].investPrice=0; board[i].investPct=10; board[i].investLaps=0; board[i].investLapsLeft=0; }
+    if(board[i].mortgaged && board[i].owner==idx){ board[i].mortgaged=false; board[i].mortgageFor=-1; board[i].mortgageAmt=0; board[i].mortgageRolls=0; }
+  }
+  document.getElementById('msg').innerText='❌ '+p.car+' '+p.name+' خسر وخرج من اللعب!';
+  players.splice(idx,1);
+  if(idx<cur) cur--;
+  if(cur>=players.length) cur=0;
+  if(timerInt) clearInterval(timerInt);
+  document.getElementById('timer').style.display='none';
+  isRolling=false;
+  render();
+  if(players.length==1){
+    gameOver=true;
+    var w=players[0];
+    playWin();
+    document.getElementById('winnerTxt').innerText='🏆 الفائز: '+w.car+' '+w.name;
+    document.getElementById('winnerSub').innerText='معاه '+w.money+'$ + '+(w.currBal||0)+' '+(w.state?w.state.currency:'')+' - كسب اللعبة كلها!';
+    document.getElementById('winnerBox').style.display='flex';
+    document.getElementById('msg').innerText='🏆 '+w.name+' هو الفائز!';
+    return;
+  }
+  if(players.length==0){ gameOver=true; return; }
+  document.getElementById('diceRes').innerText='🎲 دور '+players[cur].car+' '+players[cur].name+' - دوس الزهر';
+  setTimeout(function(){ checkAITurn(); }, 800);
+}
+
+function cellHTML(idx){
+  var cell=board[idx];
+  var carsHere='';
+  for(var k=0;k<players.length;k++) if(players[k].pos==idx) carsHere+=players[k].car+' ';
+  var ownerTxt='متاحة';
+  if(cell.special==2) ownerTxt='ابدأ من هنا 🏁';
+  else if(cell.owner==-2) ownerTxt='خاص';
+  else if(cell.owner>=0 && players[cell.owner]){
+    ownerTxt=players[cell.owner].car+' '+players[cell.owner].name;
+    if(players[cell.owner].state && players[cell.owner].state.active) ownerTxt+=' 🏛️';
+    if(cell.mortgaged) ownerTxt+=' 🏚️ مرهونة';
+  }
+  var investTxt='';
+  if(cell.investor>=0 && players[cell.investor]) investTxt='<div style="font-size:10px;color:#c084fc">مستثمر: '+players[cell.investor].car+' '+cell.investPrice+'$ '+cell.investPct+'% - باقي '+cell.investLapsLeft+'/'+cell.investLaps+' لفة</div>';
+  if(cell.mortgaged) investTxt+='<div style="font-size:10px;color:#ef4444">🏚️ مرهونة بـ '+cell.mortgageAmt+'$ - فك الرهن '+(Math.floor(cell.mortgageAmt*1.5))+'$ - باقي '+(20-cell.mortgageRolls)+' رمية وتروح للمستثمر</div>';
+  var tollTxt='مرور: -';
+  if(cell.owner>=0) tollTxt= cell.mortgaged ? 'مرهونة - مفيش مرور' : 'عدي: '+tollPass(cell)+'$ | وقوف: '+tollStop(cell)+'$';
+  var priceTxt=cell.price+'$';
+  if(cell.special==2) priceTxt='صاحب الدولة 1000 عملة / العادي 100$';
+  else if(cell.special==1){
+    if(cell.name.indexOf('بنزينة')>-1||cell.name.indexOf('صيانة')>-1) priceTxt='25$ اجباري';
+    else if(cell.name.indexOf('بنك')>-1) priceTxt='💱 بيع 5$ / شراء 5.5$';
+    else priceTxt='-';
+  }
+  var extraClass='';
+  if(cell.special==2) extraClass=' start';
+  if(cell.mortgaged) extraClass+=' mortgaged';
+  return '<div class="cell '+(cell.special?'special':'')+extraClass+'"><div class="car">'+(carsHere||'&nbsp;')+'</div><div class="city">'+cell.name+'</div><div class="price">'+priceTxt+'</div><div class="owner">'+ownerTxt+'</div>'+investTxt+'<div class="toll">'+tollTxt+'</div><div class="infra">بنية: '+cell.infra+'$</div></div>';
+}
+function render(){
+  var stateHTML='';
+  for(var s=0;s<players.length;s++){
+    if(canStartState(s)){
+      stateHTML+='<button class="stateBtn" onclick="openStateBox('+s+')">🏛️ بداء الدولة - '+players[s].car+' '+players[s].name+' - ثروة '+wealth(s)+'$ - '+ownedCount(s)+' دولة - دوس هنا</button>';
+    }
+    if(players[s].state && players[s].state.active){
+      stateHTML+='<div style="background:#2a2000;border:2px solid #FFD700;border-radius:12px;padding:8px;color:#FFD700;font-weight:900">🏛️ دولة '+players[s].name+' - عملته: '+players[s].state.currency+' = '+players[s].state.value+'$ - البنك يبيعها بـ '+(players[s].state.value*1.1).toFixed(1)+'$ - رصيد عملة: '+players[s].currBal+'</div>';
+    }
+  }
+  document.getElementById('stateTop').innerHTML=stateHTML;
+
+  var top='';
+  for(var i=0;i<players.length;i++){
+    var p=players[i];
+    var nextPay = p.loan>0 ? ' | سداد بعد '+(5-(p.rolls%5))+' رميات' : '';
+    var exemptTxt = p.exemptLaps>0 ? '<br>🆓 اعفاء مرور: '+p.exemptLaps+' لفات' : '';
+    var stateTxt = (p.state && p.state.active) ? '<br>🏛️ دولته: '+p.state.currency+' = '+p.state.value+'$ - البنك يبيعها بـ '+(p.state.value*1.1).toFixed(1)+'$<br>💱 رصيد عملة: '+p.currBal+' '+p.state.currency+'<br>💵 رصيد دولار: '+p.money+'$' : '<br>💰 ثروة: '+wealth(i)+'$ | بلاد: '+ownedCount(i);
+    if(p.boughtBal>0) stateTxt+='<br>🛒 شاري: '+p.boughtBal+' '+p.boughtCurrency;
+    var moneyLine = (p.state && p.state.active) ? '' : '💰 '+p.money+'$<br>';
+    top+='<div class="card '+(i==cur?'active':'')+' '+(p.isBot?'ai':'')+' '+(p.exemptLaps>0?'exempt':'')+' '+((p.state && p.state.active)?'state':'')+'"><div style="font-size:26px">'+p.car+'</div><b>'+(p.isBot?'🤖 ':'')+p.name+(p.state && p.state.active?' 🏛️':'')+'</b><br>'+moneyLine+'⛽ '+p.fuel+'% | 🔧 '+p.fix+'%<br>🏦 قرض: '+p.loan+'$ '+(p.loan>0?'| باقي '+p.loanLeft+' قسط'+nextPay:'')+'<br>🎲 رميات: '+p.rolls+exemptTxt+stateTxt+'<br>📍 '+board[p.pos].name+'</div>';
+  }
+  document.getElementById('playersTop').innerHTML=top;
+  var topHTML=''; for(var a=0;a<8;a++) topHTML+=cellHTML(a);
+  var rightHTML=''; for(var b=8;b<14;b++) rightHTML+=cellHTML(b);
+  var bottomHTML=''; for(var c=28;c>=21;c--) bottomHTML+=cellHTML(c);
+  var leftHTML=''; for(var d=20;d>=14;d--) leftHTML+=cellHTML(d);
+  var centerBtns =
+    '<div class="center-btns">'+
+      '<button class="btn-gold" onclick="roll()"><span class="kbd">Enter</span> 🎲 ارمي الزهر</button>'+
+      '<button class="btn-green" onclick="buy()"><span class="kbd">1</span> 🛒 اشتري البلد</button>'+
+      '<button class="btn-invest" onclick="invest()"><span class="kbd">2</span> 💜 استثمار - صاحب البلد يحدد المدة</button>'+
+      '<button class="btn-blue" onclick="bank()"><span class="kbd">3</span> 🏦 قرض max 1000$</button>'+
+      '<button class="btn-dark" onclick="infra()"><span class="kbd">4</span> 🏗️ بنية تحتية</button>'+
+      '<button class="btn-blue" onclick="fuelUp()"><span class="kbd">5</span> ⛽ بنزينة 10$</button>'+
+      '<button class="btn-red" onclick="fix()"><span class="kbd">6</span> 🔧 صيانة 10$</button>'+
+      '<button class="btn-bankrupt" onclick="declareBankruptManual()"><span class="kbd">7</span> 📢 اعلان إفلاس</button>'+
+      '<button class="btn-state" onclick="tryStartStateManual()"><span class="kbd">8</span> 🏛️ بداء الدولة</button>'+
+      '<button class="btn-bank" onclick="manualExchange()"><span class="kbd">9</span> 💱 البنك بيع / شراء</button>'+
+      '<button class="btn-end" onclick="endTurnManual()" '+(isRolling?'':'disabled')+'><span class="kbd">0</span> ⏹️ انهاء الدور قبل الوقت</button>'+
+    '</div>';
+  document.getElementById('boardInner').innerHTML=
+    '<div class="row">'+topHTML+'</div>'+
+    '<div class="mid"><div class="col">'+leftHTML+'</div>'+
+    '<div class="center"><h2>مصر 🇪🇬</h2><p>دور: '+(players[cur]?players[cur].car+' '+players[cur].name:'-')+'</p><p>البداية: العادي 100$ - صاحب الدولة 1000 عملة</p><p>قرض 30% - حد اقصى 1000$ - صاحب الدولة بلا حدود - سداد كل 5 رميات</p><p>عدي 2$ | وقوف 20$ | كل 100$ بنية = +1$ عدي / +10$ وقوف | البنك: بيع 5$ / شراء 5.5$ | الاستثمار: مدة حد أدنى 50 لفة | الرهن: 20 رمية والبلد للمستثمر</p>'+centerBtns+'</div>'+
+    '<div class="col">'+rightHTML+'</div></div>'+
+    '<div class="row">'+bottomHTML+'</div>';
+}
+function startTimer(){
+  timeLeft=TURN_TIME;
+  var timerEl=document.getElementById('timer');
+  timerEl.style.display='block';
+  timerEl.className='timer safe';
+  timerEl.innerText='⏳ باقي '+timeLeft+' ثانية ودورك يخلص لوحده';
+  if(timerInt) clearInterval(timerInt);
+  timerInt=setInterval(function(){
+    timeLeft--;
+    timerEl.innerText='⏳ باقي '+timeLeft+' ثانية ودورك يخلص لوحده';
+    if(timeLeft<=10) timerEl.className='timer';
+    if(timeLeft<=5 && timeLeft>0) beep(1000,0.08,'square',0.15,0);
+    if(timeLeft<=0){ clearInterval(timerInt); endTurnAuto(); }
+  },1000);
+}
+function payLoanIfDue(p){
+  if(p.loan>0 && p.loanLeft>0 && p.rolls>0 && p.rolls%5==0){
+    var pay=Math.ceil(p.loanTotal/10); if(p.loanLeft==1) pay=p.loan;
+    p.money-=pay; p.loan-=pay; p.loanLeft--;
+    if(p.loanLeft==0){ p.loan=0; p.loanTotal=0; }
+    document.getElementById('msg').innerText='🏦 '+p.name+' سدد قسط '+pay+'$ - باقي '+p.loanLeft+' اقساط';
+    playLoan();
+    render();
+    return true;
+  }
+  return false;
+}
+function roll(){
+  if(gameOver) return;
+  if(isRolling) return;
+  getCtx(); playDice();
+  isRolling=true;
+  var p=players[cur];
+  p.rolls++;
+  var mortgagedOwned=false;
+  for(var mi=0;mi<board.length;mi++){
+    if(board[mi].owner==cur && board[mi].mortgaged){
+      board[mi].mortgageRolls++;
+      mortgagedOwned=true;
+      if(board[mi].mortgageRolls>=20){
+        document.getElementById('msg').innerText='🏚️ عدى 20 رمية على رهن '+board[mi].name+' - البلد هتروح للمستثمر!';
+      } else {
+        document.getElementById('msg').innerText='🏚️ رهن '+board[mi].name+' - عدى '+board[mi].mortgageRolls+' رمية - باقي '+(20-board[mi].mortgageRolls)+' رمية وتروح للمستثمر';
+      }
+    }
+  }
+  if(mortgagedOwned){
+    checkMortgageExpiry();
+    if(gameOver) return;
+    render();
+  }
+  render();
+  var d=Math.floor(Math.random()*6)+1;
+  document.getElementById('diceRes').innerText='🎲 '+p.car+' '+p.name+' طلعله: '+d+' ... بيتحرك - رمية رقم '+p.rolls;
+  var steps=0;
+  var passedStart=false;
+  var moveInt=setInterval(function(){
+    var oldPos=p.pos;
+    p.pos=(p.pos+1)%board.length;
+    if(oldPos==board.length-1 && p.pos==0){
+      if(p.state && p.state.active){
+        p.currBal+=1000;
+        document.getElementById('msg').innerText='🏛️ '+p.name+' وصل البداية - خد 1000 '+p.state.currency+' - رصيده بقى '+p.currBal+' عملة';
+      } else {
+        p.money+=100;
+      }
+      passedStart=true;
+      // لفة كاملة للمستثمر - مدة استثماراته بتنقص
+      tickInvestLaps(cur);
+      if(p.exemptLaps>0){ p.exemptLaps--; }
+      playStart();
+    }
+    p.fuel=Math.max(0,p.fuel-1);
+    playMove();
+    steps++;
+    var stepCell=board[p.pos];
+    if(stepCell.owner==cur && stepCell.mortgaged){
+      clearInterval(moveInt);
+      document.getElementById('msg').innerText='🏚️ عديت على بلدك المرهونة '+stepCell.name+' - تريد فك الرهن؟ باقي '+(20-stepCell.mortgageRolls)+' رمية';
+      render();
+      setTimeout(function(){ openMortgageBox(p.pos); }, 500);
+      if(steps<d){
+        var remaining=d-steps;
+        for(var r=0;r<remaining;r++){
+          p.pos=(p.pos+1)%board.length;
+          if(p.pos==0){
+            if(p.state && p.state.active) p.currBal+=1000; else p.money+=100;
+            tickInvestLaps(cur);
+          }
+        }
+        steps=d;
+        render();
+        afterMove(p, passedStart);
+        return;
+      } else {
+        afterMove(p, passedStart);
+        return;
+      }
+    }
+    if(steps<d){
+      var passCell=board[p.pos];
+      if(passCell.owner>=0 && passCell.owner!=cur && passCell.special==0){
+        if(passCell.mortgaged){
+        } else if(p.exemptLaps>0){
+        } else if(passCell.investor==cur){
+          var gain=payInvestor(passCell, cur);
+          if(gain>0) playInvest();
+        } else {
+          var pt=tollPass(passCell);
+          p.money-=pt; if(players[passCell.owner]) players[passCell.owner].money+=pt;
+          playToll();
+        }
+      }
+    }
+    render();
+    if(steps>=d){
+      clearInterval(moveInt);
+      afterMove(p, passedStart);
+    }
+  },350);
+}
+function afterMove(p, passedStart){
+  if(gameOver) return;
+  var cell=board[p.pos];
+  var m=p.car+' '+p.name+' وقف في: '+cell.name;
+  if(passedStart){
+    if(p.state && p.state.active) m+=' | 🏛️ كملت لفة +1000 '+p.state.currency+' - رصيدك '+p.currBal+' عملة';
+    else m+=' | 🏁 كملت لفة +100$';
+  }
+  if(p.exemptLaps>0) m+=' | 🆓 اعفاء مرور '+p.exemptLaps+' لفات';
+  if(cell.owner==cur && cell.mortgaged){
+    m+=' | 🏚️ بلدك دي مرهونة - تريد فك الرهن؟ باقي '+(20-cell.mortgageRolls)+' رمية وتروح للمستثمر';
+    setTimeout(function(){ openMortgageBox(p.pos); }, 600);
+  }
+  if(cell.name.indexOf('بنزينة')>-1){ p.money-=25; p.fuel=100; m+=' | بنزينة ⛽ -25$ وفولت'; playFuel(); }
+  if(cell.name.indexOf('صيانة')>-1){ p.money-=25; p.fix=100; m+=' | صيانة 🔧 -25$ وصلحت'; playFix(); }
+  if(cell.name.indexOf('بنك')>-1){
+    m+=' | 🏦 وصلت البنك - تريد تبديل كام؟ دوس 9 - بيع 5$ / شراء 5.5$';
+    setTimeout(function(){ openExchangeBox(cur); }, 700);
+  }
+  if(cell.owner>=0 && cell.owner!=cur && cell.special==0){
+    if(cell.mortgaged){ m+=' | 🏚️ مرهونة - مفيش مرور ولا استثمار'; }
+    else if(p.exemptLaps>0){ m+=' | 🆓 اعفاء - مدفعتش مرور'; }
+    else if(cell.investor==cur){ var gain=payInvestor(cell, cur); if(gain>0) m+=' | مستثمر +'+gain+'$ 💜 '+cell.investPct+'% - دفعها '+players[cell.owner].name+' من رصيده - باقي '+cell.investLapsLeft+' لفة'; else if(pendingCaseCell>=0) m+=' | ⚖️ صاحب البلد فلوسه خلصت - اختار قضية ولا تنازل'; playInvest(); }
+    else{ var t=tollStop(cell); p.money-=t; if(players[cell.owner]) players[cell.owner].money+=t; m+=' | وقفت - دفعت '+t+'$ لـ '+(players[cell.owner]?players[cell.owner].name:''); playToll(); }
+  }
+  if(canStartState(cur) && !p.isBot){
+    m+=' | 🏛️ تقدر تبدأ دولة دلوقتي - دوس 8 او الزرار اللي فوق!';
+  }
+  if(p.money<=0 && !(p.state && p.state.active && p.currBal>0)){
+    document.getElementById('msg').innerText=m;
+    render();
+    var died = checkBankrupt(cur);
+    if(died || gameOver) return;
+    if(players[cur] && players[cur].money>0){
+      render();
+      startTimer();
+      if(p.isBot) setTimeout(function(){ aiPlay(p); }, 900);
+    }
+    return;
+  }
+  if(p.money<=0 && p.state && p.state.active && p.currBal>0){
+    m+=' | ⚠️ فلوس الدولار خلصت بس عندك '+p.currBal+' '+p.state.currency+' - روح البنك بيعها - دوس 9';
+  }
+  if(cell.owner==-1 && cell.special==0) m+=' | تقدر تشتريها بـ '+cell.price+'$ - معاك 30 ثانية - دوس 1';
+  else if(cell.owner>=0 && cell.owner!=cur && !cell.mortgaged) m+=' | تقدر تطلب استثمار - دوس 2 - صاحب البلد هيحدد المبلغ والنسبة والمدة';
+  else m+=' | معاك 30 ثانية - دوس 1/2/3/4/5/6/7/8/9';
+  document.getElementById('msg').innerText=m;
+  render();
+  startTimer();
+  if(p.isBot && canStartState(cur)){
+    setTimeout(function(){ openStateBox(cur); }, 500);
+  }
+  if(p.isBot) setTimeout(function(){ aiPlay(p); }, 900);
+}
+function aiPlay(p){
+  if(gameOver) return;
+  if(!p.isBot) return;
+  var cell=board[p.pos];
+  if(cell.owner==-1 && cell.special==0 && p.money>=cell.price && Math.random()<0.85){
+    p.money-=cell.price; cell.owner=cur; playBuy();
+    document.getElementById('msg').innerText='🤖 '+p.name+' اشترى '+cell.name+' بـ '+cell.price+'$';
+  } else if(cell.owner>=0 && cell.owner!=cur && cell.investor==-1 && !cell.mortgaged && p.money>80 && Math.random()<0.6){
+    var amt=50; var pct=10; var laps=50;
+    p.money-=amt; if(players[cell.owner]) players[cell.owner].money+=amt; cell.investor=cur; cell.investPrice=amt; cell.investPct=pct; cell.investLaps=laps; cell.investLapsLeft=laps; playInvest();
+    document.getElementById('msg').innerText='🤖 '+p.name+' استثمر '+amt+'$ في '+cell.name+' - الفلوس راحت لـ '+players[cell.owner].name+' - بنسبة '+pct+'% لمدة '+laps+' لفة';
+  } else if(p.fuel<50 && p.money>=10){ p.money-=10; p.fuel=100; playFuel(); document.getElementById('msg').innerText='🤖 '+p.name+' فول بنزينة'; }
+  else if(p.fix<50 && p.money>=10){ p.money-=10; p.fix=100; playFix(); document.getElementById('msg').innerText='🤖 '+p.name+' عمل صيانة'; }
+  else if(cell.owner==cur && p.money>100 && Math.random()<0.5){ var amt2=100; p.money-=amt2; cell.infra+=amt2; playInfra(); document.getElementById('msg').innerText='🤖 '+p.name+' عمل بنية '+amt2+'$ في '+cell.name+' - الوقوف بقى '+tollStop(cell)+'$'; }
+  else if(p.money<50 && p.loan==0){ var amt3=500; p.money+=amt3; p.loanTotal=amt3+Math.floor(amt3*0.30); p.loan=p.loanTotal; p.loanLeft=10; playLoan(); document.getElementById('msg').innerText='🤖 '+p.name+' اخد قرض '+amt3+'$'; }
+  render();
+  setTimeout(function(){ endTurnAuto(); }, 1200);
+}
+function checkAITurn(){
+  if(gameOver) return;
+  var p=players[cur];
+  if(p && p.isBot && !isRolling){
+    document.getElementById('msg').innerText='🤖 دور '+p.name+' ... الكمبيوتر بيلعب';
+    setTimeout(function(){ roll(); }, 1000);
+  }
+}
+function startAI(){
+  getCtx();
+  isAI=true;
+  resetBoard();
+  document.getElementById('msg').innerText='🤖 بدأت ضد 3 كمبيوتر - انت لاعب 1';
+  initPlayers(4,true);
+}
+function startFriends(){
+  isAI=false;
+  resetBoard();
+  document.getElementById('msg').innerText='👥 بتلعب مع صحابك';
+  initPlayers(pCount,false);
+}
+function endTurnManual(){
+  if(gameOver) return;
+  if(!isRolling) return;
+  playTurn();
+  endTurnAuto();
+}
+function endTurnAuto(){
+  if(timerInt) clearInterval(timerInt);
+  document.getElementById('timer').style.display='none';
+  if(!isRolling || gameOver) return;
+  playTurn();
+  var p=players[cur];
+  if(p.loan>0){ payLoanIfDue(p); }
+  if(p.money<=0 && !(p.state && p.state.active && p.currBal>0)){
+    var died=checkBankrupt(cur);
+    if(died || gameOver) return;
+  }
+  cur=(cur+1)%players.length;
+  isRolling=false;
+  document.getElementById('diceRes').innerText='🎲 دور '+players[cur].car+' '+players[cur].name+' - دوس الزهر';
+  document.getElementById('msg').innerText='دور '+players[cur].name+' - دوس الزهر';
+  render();
+  checkAITurn();
+}
+function buy(){
+  if(gameOver) return;
+  if(!isRolling) { document.getElementById('msg').innerText='ارمي الزهر الاول - دوس Enter'; return; }
+  if(players[cur].isBot) return;
+  var p=players[cur]; var c=board[p.pos];
+  if(c.owner==-1 && c.special==0 && !c.mortgaged && p.money>=c.price){ p.money-=c.price; c.owner=cur; playBuy(); document.getElementById('msg').innerText='اشتريت '+c.name+' بـ '+c.price+'$ ✅ لسه معاك '+timeLeft+' ثانية'; }
+  else { playSell(); document.getElementById('msg').innerText='مينفعش تشتري هنا'; }
+  render();
+}
+function invest(){
+  if(gameOver) return;
+  if(!isRolling) { document.getElementById('msg').innerText='ارمي الزهر الاول - دوس Enter'; return; }
+  if(players[cur].isBot) return;
+  var p=players[cur]; var c=board[p.pos];
+  if(!(c.owner>=0 && c.owner!=cur && c.investor==-1 && c.special==0 && !c.mortgaged)){
+    if(c.mortgaged) document.getElementById('msg').innerText='دي مرهونة - مينفعش تستثمر فيها لحد ما تتفك';
+    else if(c.investor==cur) document.getElementById('msg').innerText='انت مستثمر هنا اصلا بـ '+c.investPrice+'$ - باقي '+c.investLapsLeft+' لفة';
+    else if(c.owner==cur) document.getElementById('msg').innerText='دي بلدك، مينفعش تستثمر فيها';
+    else { playSell(); document.getElementById('msg').innerText='مينفعش تستثمر هنا - لازم تكون بلد حد تاني ومفيهاش مستثمر'; }
+    render(); return;
+  }
+  var owner=players[c.owner];
+  document.getElementById('msg').innerText='🤝 بعت طلب استثمار لـ '+owner.name+' صاحب '+c.name+' ... مستني يحدد المبلغ والنسبة والمدة';
+  render();
+  var reqAmt=0; var reqPct=10; var reqLaps=50;
+  if(owner.isBot){
+    reqAmt=50+Math.floor(Math.random()*50);
+    reqPct=10+Math.floor(Math.random()*10);
+    reqLaps=50+Math.floor(Math.random()*20);
+    setTimeout(function(){
+      var accept = confirm('🤝 '+owner.name+' صاحب '+c.name+' وافق يخليك تستثمر\n\nالمبلغ المطلوب: '+reqAmt+'$ - الفلوس دي هتروح لـ '+owner.name+' صاحب البلد\nنسبة ارباحك كل مرة تعدي: '+reqPct+'% - صاحب البلد هيدفعها من رصيده\nالمدة: '+reqLaps+' لفة كاملة - حد أدنى 50 لفة\nلو فلوسه خلصت: هتختار قضية ولا تنازل\n\nموافق؟ OK = موافق - Cancel = رافض');
+      if(accept && p.money>=reqAmt){
+        p.money-=reqAmt; owner.money+=reqAmt; c.investor=cur; c.investPrice=reqAmt; c.investPct=reqPct; c.investLaps=reqLaps; c.investLapsLeft=reqLaps; playInvest();
+        document.getElementById('msg').innerText='💜 اتفقت مع '+owner.name+' - دفعت '+reqAmt+'$ راحت لـ '+owner.name+' - وهو هيدفعلك '+reqPct+'% كل مرة تعدي لمدة '+reqLaps+' لفة - لسه معاك '+timeLeft+' ثانية';
+      } else {
+        document.getElementById('msg').innerText='❌ رفضت عرض الاستثمار من '+owner.name;
+      }
+      render();
+    }, 600);
+  } else {
+    setTimeout(function(){
+      var amt=Number(prompt('🤝 '+p.name+' (لاعب رقم '+(cur+1)+') عايز يستثمر في بلدك '+c.name+'\n\nانت صاحب البلد - حدد الرقم المطلوب منه يدفعه\nالفلوس دي هتجيلك انت\nمعاه '+p.money+'$')||0);
+      if(!amt || amt<=0){ document.getElementById('msg').innerText='صاحب البلد رفض الاستثمار'; render(); return; }
+      var pct=Number(prompt('حدد نسبة الارباح اللي هياخدها المستثمر كل مرة يعدي؟\nانت اللي هتدفعها من رصيدك\nلو فلوسك خلصت المستثمر هيختار قضية ولا تنازل\nمثال: 10 يعني 10% من المبلغ كل مرة\nاكتب رقم من 1 لـ 50')||10);
+      if(!pct || pct<1) pct=10; if(pct>50) pct=50;
+      var laps=Number(prompt('حدد مدة الاستثمار - كام لفة كاملة؟\nالحد الأدنى 50 لفة كاملة\nمثال: 50 يعني المستثمر ياخد نسبته لمدة 50 لفة وبعدها الاستثمار يخلص')||50);
+      if(!laps || laps<50){ alert('الحد الأدنى للمدة 50 لفة كاملة - هنخليها 50 لفة'); laps=50; }
+      var accept2 = confirm('🤝 '+owner.name+' طلب منك:\nتدفع '+amt+'$ استثمار في '+c.name+' - الفلوس هتروح لـ '+owner.name+'\nوتاخد '+pct+'% ارباح كل مرة تعدي - '+owner.name+' هيدفعها من رصيده\nالمدة: '+laps+' لفة كاملة\n\nموافق؟ OK = موافق - Cancel = رافض');
+      if(accept2 && p.money>=amt){
+        p.money-=amt; owner.money+=amt; c.investor=cur; c.investPrice=amt; c.investPct=pct; c.investLaps=laps; c.investLapsLeft=laps; playInvest();
+        document.getElementById('msg').innerText='💜 اتفقت مع '+owner.name+' - دفعت '+amt+'$ راحت لـ '+owner.name+' - وهو هيدفعلك '+pct+'% كل مرة تعدي لمدة '+laps+' لفة - لسه معاك '+timeLeft+' ثانية';
+      } else {
+        document.getElementById('msg').innerText='❌ الاستثمار اترفض - يا انت رفضت يا معكش فلوس';
+      }
+      render();
+    }, 300);
+  }
+}
+function bank(){
+  if(gameOver) return;
+  if(!isRolling) return;
+  if(players[cur].isBot) return;
+  var p=players[cur];
+  if(p.loan>0){ alert('عندك قرض باقي '+p.loanLeft+' اقساط - سداد كل 5 رميات'); return; }
+  var isState = p.state && p.state.active;
+  var maxTxt = isState ? 'بلا حدود - انت صاحب دولة' : 'حد اقصى 1000$';
+  var amt=Number(prompt('عايز تقترض كام؟ 30% للبنك، سداد كل 5 رميات زهر\n'+maxTxt)||0);
+  if(!amt) return;
+  if(!isState && amt>1000){ alert('الحد الاقصى للقرض 1000$ - هنخليها 1000$'); amt=1000; }
+  p.money+=amt; p.loanTotal=amt+Math.floor(amt*0.30); p.loan=p.loanTotal; p.loanLeft=10;
+  playLoan();
+  document.getElementById('msg').innerText='اخدت قرض '+amt+'$ هترجع '+p.loanTotal+'$ - سداد كل 5 رميات';
+  render();
+}
+function infra(){
+  if(gameOver) return;
+  if(!isRolling) return;
+  if(players[cur].isBot) return;
+  var p=players[cur]; var list='';
+  for(var i=0;i<board.length;i++) if(board[i].owner==cur) list+=i+' - '+board[i].name+' (عدي '+tollPass(board[i])+'$ / وقوف '+tollStop(board[i])+'$)\n';
+  if(!list){ alert('معندكش بلاد'); return; }
+  var idx=Number(prompt('اختار رقم بلدك:\n'+list)||0);
+  var amt=Number(prompt('تحط كام بنية؟ كل 100$ = +1$ عدي / +10$ وقوف')||0);
+  if(board[idx] && board[idx].owner==cur && p.money>=amt){ p.money-=amt; board[idx].infra+=amt; playInfra(); document.getElementById('msg').innerText='بنية '+board[idx].name+' بقت '+board[idx].infra+'$ - العدي '+tollPass(board[idx])+'$ - الوقوف '+tollStop(board[idx])+'$ - لسه معاك '+timeLeft+' ثانية'; }
+  render();
+}
+function fuelUp(){ if(gameOver) return; if(!isRolling) return; if(players[cur].isBot) return; var p=players[cur]; if(p.money>=10){ p.money-=10; p.fuel=100; playFuel(); document.getElementById('msg').innerText='فولت 100%'; } render(); }
+function fix(){ if(gameOver) return; if(!isRolling) return; if(players[cur].isBot) return; var p=players[cur]; if(p.money>=10){ p.money-=10; p.fix=100; playFix(); document.getElementById('msg').innerText='صلحت 100%'; } render(); }
+
+document.addEventListener('keydown', function(e){
+  if(gameOver) return;
+  if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
+  if(players[cur] && players[cur].isBot) return;
+  if(e.key==='Enter'){ e.preventDefault(); if(!isRolling) roll(); }
+  else if(e.key==='1'){ buy(); }
+  else if(e.key==='2'){ invest(); }
+  else if(e.key==='3'){ bank(); }
+  else if(e.key==='4'){ infra(); }
+  else if(e.key==='5'){ fuelUp(); }
+  else if(e.key==='6'){ fix(); }
+  else if(e.key==='7'){ declareBankruptManual(); }
+  else if(e.key==='8'){ tryStartStateManual(); }
+  else if(e.key==='9'){ manualExchange(); }
+  else if(e.key==='0'){ endTurnManual(); }
+});
+
+initPlayers(pCount,false);
+</script>
+</body>
+</html>
