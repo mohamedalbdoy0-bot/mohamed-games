@@ -61,8 +61,9 @@ function correct(){
   var ai=per>=80?'🤖 الذكاء الاصطناعي: مستواك ممتاز، جاهز للمستوى اللي بعده.':per>=50?'🤖 الذكاء الاصطناعي: مستواك متوسط، ركز شوية على اللي غلطت فيه.':'🤖 الذكاء الاصطناعي: محتاج تراجع الأساسيات، ارجع العب الأدوار من الأول.';
   var r=document.getElementById('result'); r.style.display='block';
   r.innerHTML='<h2>نتيجتك: '+score+' / 10 - '+per+'%</h2><h3>'+msg+'</h3><p>'+ai+'</p><hr>'+details+'<button class="submit" onclick="location.reload()">🔄 امتحان جديد عشوائي</button>';
-  window.scrollTo(0,document.body.scrollHeight);
+  window.scrollTo(0,document.body3.scrollHeight);
 }
 </script>
+ 
 </body>
 </html>
