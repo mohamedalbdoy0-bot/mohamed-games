@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>العب واتعلم - الامتحان</title>
+<style>
+body{margin:0;font-family:Arial;background:#0a0a0a;color:#fff;padding:15px;text-align:center}
+.card{max-width:600px;margin:15px auto;background:#111;border:3px solid #FFD700;border-radius:15px;padding:20px;text-align:right}
+h1{color:#FFD700;text-align:center}
+.q{margin:15px 0;padding:12px;background:#1a1a1a;border-radius:10px}
+.q b{display:block;margin-bottom:8px}
+.q label{display:block;padding:8px;background:#222;border-radius:8px;margin:4px 0;cursor:pointer}
+button{border:none;border-radius:10px;padding:14px 20px;font-weight:900;cursor:pointer;font-size:17px;margin:10px}
+.submit{background:#22c55e;color:#fff;width:100%}
+.back{background:#FFD700;color:#000}
+</style>
+</head>
+<body>
+<h1>🏆 الامتحان النهائي - العب واتعلم</h1>
+<p>10 أسئلة متوسطة - التصحيح تلقائي بالذكاء الاصطناعي 🤖</p>
+<div class="card" id="exam"></div>
+<button class="submit" onclick="correct()">✅ صحح الامتحان تلقائي</button>
+<div id="result" class="card" style="display:none"></div>
+<button class="back" onclick="location.href='map3.html'">⬅️ رجوع للخريطة</button>
+<script>
+var Q=[
+{q:'ما هو جمع "كتاب" ؟',o:['كتب','كتابات','كاتب','مكتبة'],a:0,t:'عربي'},
+{q:'ما هو عكس "سعيد" ؟',o:['حزين','فرحان','مبسوط','قوي'],a:0,t:'عربي'},
+{q:'ما هو جمع "قلم" ؟',o:['أقلام','قلمون','قلمات','قلام'],a:0,t:'عربي'},
+{q:'What is opposite of "Big"?',o:['Small','Large','Huge','Tall'],a:0,t:'انجليزي'},
+{q:'What is "قطة" in English?',o:['Cat','Dog','Bird','Fish'],a:0,t:'انجليزي'},
+{q:'What is past of "Play"?',o:['Played','Plays','Playing','Plaid'],a:0,t:'انجليزي'},
+{q:'كم ناتج 9 × 3 ؟',o:['27','24','21','18'],a:0,t:'رياضة'},
+{q:'كم ناتج 36 ÷ 6 ؟',o:['6','4','5','7'],a:0,t:'رياضة'},
+{q:'كم ناتج 50 + 25 ؟',o:['75','65','70','80'],a:0,t:'رياضة'},
+{q:'كم عدد حروف اللغة العربية ؟',o:['28','26','30','25'],a:0,t:'عربي'},
+];
+Q=Q.sort(()=>Math.random()-0.5);
+var div=document.getElementById('exam');
+Q.forEach(function(item,i){
+  var opts=item.o.map((x,idx)=>({txt:x,isRight:idx===item.a})).sort(()=>Math.random()-0.5);
+  item.shuffled=opts;
+  var html='<div class="q"><b>'+(i+1)+'. ['+item.t+'] '+item.q+'</b>';
+  opts.forEach(function(op,j){html+='<label><input type="radio" name="q'+i+'" value="'+j+'"> '+op.txt+'</label>';});
+  html+='</div>'; div.innerHTML+=html;
+});
+function correct(){
+  var score=0; var details='';
+  Q.forEach(function(item,i){
+    var sel=document.querySelector('input[name="q'+i+'"]:checked');
+    var ci=item.shuffled.findIndex(x=>x.isRight);
+    var ok=sel&&Number(sel.value)===ci;
+    if(ok) score++;
+    details+='<p>'+(i+1)+'. '+(ok?'✅ صح':'❌ غلط - الصح: '+item.shuffled[ci].txt)+' - '+item.q+'</p>';
+  });
+  var per=score*10;
+  var msg=per>=90?'🏆 ممتاز جدا - انت عبقري!':per>=70?'👏 شاطر جدا':per>=50?'👍 كويس - راجع شوية':'💪 حاول تاني';
+  var ai=per>=80?'🤖 الذكاء الاصطناعي: مستواك ممتاز، جاهز للمستوى اللي بعده.':per>=50?'🤖 الذكاء الاصطناعي: مستواك متوسط، ركز شوية على اللي غلطت فيه.':'🤖 الذكاء الاصطناعي: محتاج تراجع الأساسيات، ارجع العب الأدوار من الأول.';
+  var r=document.getElementById('result'); r.style.display='block';
+  r.innerHTML='<h2>نتيجتك: '+score+' / 10 - '+per+'%</h2><h3>'+msg+'</h3><p>'+ai+'</p><hr>'+details+'<button class="submit" onclick="location.reload()">🔄 امتحان جديد عشوائي</button>';
+  window.scrollTo(0,document.body.scrollHeight);
+}
+</script>
+<script src="https://quge5.com/88/tag.min.js" data-zone="315842" async data-cfasync="false"></script>
+
+</body>
+</html>

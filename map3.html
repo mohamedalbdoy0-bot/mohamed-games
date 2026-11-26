@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>العب واتعلم - الخريطة</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#0a0a0a;color:#fff;padding:10px;text-align:center}
+.top{max-width:520px;margin:0 auto;display:flex;gap:8px;justify-content:space-between}
+.top button{border:none;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer;font-size:14px;background:#FFD700;color:#000}
+h1{color:#FFD700;margin:8px;font-size:24px}
+p{color:#ccc;margin:2px;font-size:13px}
+.legend{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:8px}
+.legend span{padding:5px 10px;border-radius:20px;font-weight:900;font-size:12px}
+.ar{background:#22c55e;color:#000}
+.en{background:#3b82f6;color:#fff}
+.n30{background:#f97316;color:#fff}
+.max{background:#FFD700;color:#000}
+.map{max-width:520px;width:95%;margin:10px auto;background:#f5eeda;border:3px solid #FFD700;border-radius:15px;padding:12px}
+.row{display:flex;gap:6px;justify-content:center;margin:5px 0}
+.circle{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;border:2px solid #000;cursor:pointer;font-family:Arial;padding:0;flex-shrink:0}
+.circle.ar{background:#7ab648;color:#000}
+.circle.en{background:#2f7fc4;color:#fff}
+.circle.n30{background:#f08a1d;color:#000}
+.circle.max{width:58px;height:58px;background:#FFD700;color:#000;font-size:13px;border:3px solid #000}
+@media(max-width:600px){
+  .map{max-width:95%;padding:8px}
+  .circle{width:32px;height:32px;font-size:11px}
+  .circle.max{width:50px;height:50px}
+}
+</style>
+</head>
+<body>
+<div class="top">
+<button onclick="location.href='index3.html'">⬅️ الخريطة</button>
+<button onclick="location.href='index3.html'">🏠 الرئيسية</button>
+</div>
+<h1>🎮 العب واتعلم</h1>
+<p>دوس على أي دايرة عشان تدخل لعبتها</p>
+<div class="legend">
+<span class="ar">🟢 عربي - 28</span>
+<span class="en">🔵 انجليزي - 26</span>
+<span class="n30">🟠 رياضة - 30</span>
+<span class="max">⭐ MAX</span>
+</div>
+
+<div class="map" id="map"></div>
+
+<script>
+var map=document.getElementById('map');
+function makeRow(nums, type){
+  var div=document.createElement('div');
+  div.className='row';
+  nums.forEach(function(n){
+    var b=document.createElement('button');
+    var lvl=n;
+    if(type==='arabic'){
+      b.className='circle ar'; b.innerText=lvl;
+      b.onclick=function(){ location.href='game3.html?type=arabic&level='+lvl; };
+    } else if(type==='english'){
+      b.className='circle en'; b.innerText=lvl-28;
+      b.onclick=function(){ location.href='game3.html?type=english&level='+(lvl-28); };
+    } else if(type==='math'){
+      b.className='circle n30'; b.innerText=lvl-54;
+      b.onclick=function(){ location.href='game3.html?type=math&level='+(lvl-54); };
+    } else {
+      b.className='circle max'; b.innerText='MAX';
+      b.onclick=function(){ location.href='exam3.html'; };
+    }
+    div.appendChild(b);
+  });
+  map.appendChild(div);
+}
+makeRow([84],'max');
+makeRow([54,55,56,57,58,59,60],'math');
+makeRow([67,66,65,64,63,62,61],'math');
+makeRow([68,69,70,71,72,73,74],'math');
+makeRow([81,80,79,78,77,76,75],'math');
+makeRow([82,83],'math');
+makeRow([28+1,28+2,28+3,28+4,28+5,28+6,28+7],'english');
+makeRow([28+14,28+13,28+12,28+11,28+10,28+9,28+8],'english');
+makeRow([28+15,28+16,28+17,28+18,28+19,28+20,28+21],'english');
+makeRow([28+26,28+25,28+24,28+23,28+22],'english');
+makeRow([1,2,3,4,5,6,7],'arabic');
+makeRow([14,13,12,11,10,9,8],'arabic');
+makeRow([15,16,17,18,19,20,21],'arabic');
+makeRow([28,27,26,25,24,23,22],'arabic');
+</script>
+</body>
+</html>
